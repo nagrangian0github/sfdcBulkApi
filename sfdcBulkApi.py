@@ -4,6 +4,7 @@
 import json
 import requests
 import configparser
+import os
 
 
 def main():
@@ -30,7 +31,7 @@ class SalsforceApi:
         # configparserの宣言とiniファイルの読み込み
         # --------------------------------------------------
         config_ini = configparser.ConfigParser()
-        config_ini.read('config.ini', encoding='utf-8')
+        config_ini.read(os.path.dirname(__file__) + '/config.ini', encoding='utf-8')
 
         my_domain = config_ini['DEFAULT']['my_domain']
         url_auth = "https://" + my_domain + ".my.salesforce.com/services/oauth2/token"
