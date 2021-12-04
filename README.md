@@ -1,0 +1,2 @@
+# sfdcBulkApi
+SalesforceのBulk APIを実行するPythonのサンプルスクリプト
