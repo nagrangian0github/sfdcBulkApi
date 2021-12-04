@@ -1,19 +1,25 @@
 #!/bin/python3
 # coding: utf-8
 
-import json
-import requests
 import configparser
+import csv
+import json
 import os
+import io
+
+import requests
 
 
 def main():
     print("-----Salesforce Bulk API 2.0------")
     sp = SalsforceApi()
+
+#    sp.delete_alljob()
+
     sp.post_job()
     state = sp.get_querybob()
     while state in ["UploadComplete", "InProgress"]:
-        state = sp.get_querybob()
+       state = sp.get_querybob()
     print('Job State：' + state)
     sp.get_queryresults()
     sp.write_results()
@@ -68,9 +74,14 @@ class SalsforceApi:
         print('instance_url：' + self.instance_url)
 
     def write_results(self):
-        f = open(self.output_file, 'w', newline='\n', encoding='UTF-8')
-        f.write(self.results)
-        f.close()
+        resutls_f = io.StringIO()
+        resutls_f.write(self.results)
+        resutls_f.seek(0)
+        csv_f = csv.reader(resutls_f, delimiter=",", doublequote=True, lineterminator="\r\n", quotechar='"', skipinitialspace=True)
+        with open(self.output_file, "w", newline="\n", encoding="utf-8") as f:
+            writer = csv.writer(f, delimiter=",", quotechar='"', quoting=csv.QUOTE_ALL)
+            for row in csv_f:
+                writer.writerow(row)
         print('Output File：' + self.output_file)
 
     def delete_queryjob(self):
@@ -147,7 +158,25 @@ class SalsforceApi:
         self.jobid = res_info['id']
         state = res_info['state']
         return state
+ 
+    def delete_alljob(self):
+        authorization = 'Bearer ' + self.access_token
+        headers = {'content-type': 'application/json',
+                   'Authorization': authorization
+                   }
+        url_query = self.instance_url + "/services/data/" + self.version_number + "/jobs/query"
+        res = requests.get(url_query, headers=headers)
+        # 実行結果を判定
+        if res.status_code != 200:
+            raise Exception(f'code:{res.status_code}, text:{res.text}')
 
+        res_info = json.loads(res.text)
+
+        for i in res_info['records']:
+            if i['jobType'] == 'V2Query':
+                self.jobid = i['id']
+                print('Job Id：' + self.jobid + '／Status：' + self.delete_queryjob())
+ 
 
 if __name__ == "__main__":
     main()
