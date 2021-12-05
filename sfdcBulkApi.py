@@ -13,8 +13,9 @@ import requests
 def main():
     print("-----Salesforce Bulk API 2.0------")
     sp = SalsforceApi()
-
-#    sp.delete_alljob()
+    # sp.jobid = '7505h000006EaYG'
+    # sp.get_queryresults()
+    # sp.write_results_tofile()
 
     sp.post_job()
     state = sp.get_querybob()
@@ -22,14 +23,22 @@ def main():
        state = sp.get_querybob()
     print('Job State：' + state)
     sp.get_queryresults()
-    sp.write_results()
+    sp.write_results_tofile()
     if sp.delete_queryjob() == 204:
         print('Job Delete： Success')
+
+    #-----------------------------------
+    #----全ジョブを削除するメソッド
+    # sp.delete_alljob()
+    #-----------------------------------
 
 
 class SalsforceApi:
 
     def __init__(self):
+        # --------------------------------------------------
+        # コンストラクタでアクセストークンを取得する
+        # --------------------------------------------------
         self.jobid = ''
         self.results = ''
 
@@ -73,7 +82,7 @@ class SalsforceApi:
         print('API Version：' + self.version_number)
         print('instance_url：' + self.instance_url)
 
-    def write_results(self):
+    def write_results_tofile(self):
         resutls_f = io.StringIO()
         resutls_f.write(self.results)
         resutls_f.seek(0)
@@ -175,7 +184,7 @@ class SalsforceApi:
         for i in res_info['records']:
             if i['jobType'] == 'V2Query':
                 self.jobid = i['id']
-                print('Job Id：' + self.jobid + '／Status：' + self.delete_queryjob())
+                print('Job Id：' + self.jobid + '／Status：' + str(self.delete_queryjob()))
  
 
 if __name__ == "__main__":
